@@ -1,0 +1,23 @@
+p, writer, domain1, data1, read
+p, writer, domain1, data1, write
+p, reader, domain1, data2, read
+p, reader, domain1, data2, download
+p, visitor, domain1, data3, view
+p, writer2, domain2, data1, read
+p, writer2, domain2, data1, write
+p, writer2, domain2, data1, download
+p, reader2, domain2, data2, view
+p, writer3, domain3, data1, write
+p, writer3, domain3, data2, download
+p, reader3, domain3, data2, read
+p, visitor3, domain3, data3, *
+p, Observer3, domain3, data3, view
+g, alice, admin, domain1
+g, bob, reader, domain1
+g, foo, visitor, domain1
+g, alice, reader2, domain2
+g, bob, admin, domain2
+g, foo, visitor2, domain2
+g, alice, visitor3, domain3
+g, bob, reader3, domain3
+g, foo, admin, domain3
