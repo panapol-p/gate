@@ -22,9 +22,9 @@ func NewGate(model, policyAdapter interface{}) (*Gate, error) {
 	return &Gate{E: e}, nil
 }
 
-func (g Gate) HasPermission(user, domain, module, action string) (bool, error) {
+func (g Gate) HasPermission(domain, user, module, action string) (bool, error) {
 	//gate for admin
-	if g.IsAdmin(user, domain) {
+	if g.IsAdmin(domain, user) {
 		return true, nil
 	}
 
@@ -33,8 +33,8 @@ func (g Gate) HasPermission(user, domain, module, action string) (bool, error) {
 	return res, err
 }
 
-func (g Gate) IsAdmin(sub, dom string) bool {
-	f := g.E.GetFilteredGroupingPolicy(0, sub, "admin", dom, "")
+func (g Gate) IsAdmin(domain, user string) bool {
+	f := g.E.GetFilteredGroupingPolicy(0, user, "admin", domain, "")
 	if len(f) > 0 {
 		return true
 	}
@@ -58,7 +58,7 @@ func (g Gate) GetRoles(domain string) []string {
 	return r
 }
 
-func (g Gate) GetPermissionsForRole(role string, domain string) []string {
+func (g Gate) GetPermissionsForRole(domain string, role string) []string {
 	if role == "admin" {
 		return []string{"*"}
 	}

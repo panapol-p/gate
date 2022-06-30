@@ -1,6 +1,7 @@
 package gate
 
 import (
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -49,48 +50,56 @@ func TestGate_GetAllUsersRole(t *testing.T) {
 
 func TestGate_GetPermissionsForRole(t *testing.T) {
 	g, _ := NewGate("./rbac_model.conf", "./rbac_with_domains_policy.csv")
+
+	ps := g.E.GetPermissionsForUserInDomain("writer", "domain1")
+	var p []string
+	for i := range ps {
+		p = append(p, ps[i][2]+"."+ps[i][3])
+	}
+	log.Println(p)
+
 	// test admin role
-	p11 := g.GetPermissionsForRole("admin", "domain1")
+	p11 := g.GetPermissionsForRole("domain1", "admin")
 	assert.Equal(t, []string{"*"}, p11)
-	p21 := g.GetPermissionsForRole("admin", "domain2")
+	p21 := g.GetPermissionsForRole("domain2", "admin")
 	assert.Equal(t, []string{"*"}, p21)
-	p31 := g.GetPermissionsForRole("admin", "domain3")
+	p31 := g.GetPermissionsForRole("domain3", "admin")
 	assert.Equal(t, []string{"*"}, p31)
 
 	//test domain1
-	p12 := g.GetPermissionsForRole("writer", "domain1")
+	p12 := g.GetPermissionsForRole("domain1", "writer")
 	assert.Equal(t, []string{"data1.read", "data1.write"}, p12)
-	p13 := g.GetPermissionsForRole("reader", "domain1")
+	p13 := g.GetPermissionsForRole("domain1", "reader")
 	assert.Equal(t, []string{"data2.read", "data2.download"}, p13)
-	p14 := g.GetPermissionsForRole("visitor", "domain1")
+	p14 := g.GetPermissionsForRole("domain1", "visitor")
 	assert.Equal(t, []string{"data3.view"}, p14)
 
 	//test domain2
-	p22 := g.GetPermissionsForRole("writer2", "domain2")
+	p22 := g.GetPermissionsForRole("domain2", "writer2")
 	assert.Equal(t, []string{"data1.read", "data1.write", "data1.download"}, p22)
-	p23 := g.GetPermissionsForRole("reader2", "domain2")
+	p23 := g.GetPermissionsForRole("domain2", "reader2")
 	assert.Equal(t, []string{"data2.view"}, p23)
 
 	//test domain3
-	p32 := g.GetPermissionsForRole("writer3", "domain3")
+	p32 := g.GetPermissionsForRole("domain3", "writer3")
 	assert.Equal(t, []string{"data1.write", "data2.download"}, p32)
-	p33 := g.GetPermissionsForRole("reader3", "domain3")
+	p33 := g.GetPermissionsForRole("domain3", "reader3")
 	assert.Equal(t, []string{"data2.read"}, p33)
-	p34 := g.GetPermissionsForRole("visitor3", "domain3")
+	p34 := g.GetPermissionsForRole("domain3", "visitor3")
 	assert.Equal(t, []string{"data3.*"}, p34)
-	p35 := g.GetPermissionsForRole("Observer3", "domain3")
+	p35 := g.GetPermissionsForRole("domain3", "Observer3")
 	assert.Equal(t, []string{"data3.view"}, p35)
 
 	//test no role in domain
-	p15 := g.GetPermissionsForRole("visitor3", "domain1")
+	p15 := g.GetPermissionsForRole("domain1", "visitor3")
 	assert.Nil(t, p15)
-	p24 := g.GetPermissionsForRole("visitor3", "domain1")
+	p24 := g.GetPermissionsForRole("domain1", "visitor3")
 	assert.Nil(t, p24)
-	p36 := g.GetPermissionsForRole("visitor3", "domain1")
+	p36 := g.GetPermissionsForRole("domain1", "visitor3")
 	assert.Nil(t, p36)
 
 	//test no domain
-	p41 := g.GetPermissionsForRole("visitor", "domain4")
+	p41 := g.GetPermissionsForRole("domain4", "visitor")
 	assert.Nil(t, p41)
 }
 
@@ -110,63 +119,63 @@ func TestGate_HasPermission(t *testing.T) {
 	g, _ := NewGate("./rbac_model.conf", "./rbac_with_domains_policy.csv")
 
 	//domain1
-	p11, err := g.HasPermission("alice", "domain1", "data1", "write")
+	p11, err := g.HasPermission("domain1", "alice", "data1", "write")
 	assert.NoError(t, err)
 	assert.Equal(t, true, p11)
-	p12, err := g.HasPermission("alice", "domain1", "data4", "write")
+	p12, err := g.HasPermission("domain1", "alice", "data4", "write")
 	assert.NoError(t, err)
 	assert.Equal(t, true, p12)
-	p13, err := g.HasPermission("bob", "domain1", "data2", "download")
+	p13, err := g.HasPermission("domain1", "bob", "data2", "download")
 	assert.NoError(t, err)
 	assert.Equal(t, true, p13)
-	p14, err := g.HasPermission("bob", "domain1", "data2", "write")
+	p14, err := g.HasPermission("domain1", "bob", "data2", "write")
 	assert.NoError(t, err)
 	assert.Equal(t, false, p14)
 
 	//domain2
-	p21, err := g.HasPermission("alice", "domain2", "data2", "download")
+	p21, err := g.HasPermission("domain2", "alice", "data2", "download")
 	assert.NoError(t, err)
 	assert.Equal(t, false, p21)
-	p22, err := g.HasPermission("alice", "domain2", "data2", "view")
+	p22, err := g.HasPermission("domain2", "alice", "data2", "view")
 	assert.NoError(t, err)
 	assert.Equal(t, true, p22)
-	p23, err := g.HasPermission("bob", "domain2", "data2", "download")
+	p23, err := g.HasPermission("domain2", "bob", "data2", "download")
 	assert.NoError(t, err)
 	assert.Equal(t, true, p23)
-	p24, err := g.HasPermission("bob", "domain2", "data2", "view")
+	p24, err := g.HasPermission("domain2", "bob", "data2", "view")
 	assert.NoError(t, err)
 	assert.Equal(t, true, p24)
-	p25, err := g.HasPermission("foo", "domain2", "data2", "view")
+	p25, err := g.HasPermission("domain2", "foo", "data2", "view")
 	assert.NoError(t, err)
 	assert.Equal(t, false, p25)
 
 	//domain3
-	p31, err := g.HasPermission("foo", "domain3", "data2", "view")
+	p31, err := g.HasPermission("domain3", "foo", "data2", "view")
 	assert.NoError(t, err)
 	assert.Equal(t, true, p31)
-	p32, err := g.HasPermission("alice", "domain3", "data3", "view")
+	p32, err := g.HasPermission("domain3", "alice", "data3", "view")
 	assert.NoError(t, err)
 	assert.Equal(t, true, p32)
-	p321, err := g.HasPermission("alice", "domain3", "data3", "write")
+	p321, err := g.HasPermission("domain3", "alice", "data3", "write")
 	assert.NoError(t, err)
 	assert.Equal(t, true, p321)
-	p33, err := g.HasPermission("alice", "domain3", "data2", "view")
+	p33, err := g.HasPermission("domain3", "alice", "data2", "view")
 	assert.NoError(t, err)
 	assert.Equal(t, false, p33)
-	p34, err := g.HasPermission("bob", "domain3", "data2", "view")
+	p34, err := g.HasPermission("domain3", "bob", "data2", "view")
 	assert.NoError(t, err)
 	assert.Equal(t, false, p34)
-	p35, err := g.HasPermission("bob", "domain3", "data2", "read")
+	p35, err := g.HasPermission("domain3", "bob", "data2", "read")
 	assert.NoError(t, err)
 	assert.Equal(t, true, p35)
 
 	//no user
-	p41, err := g.HasPermission("bunny", "domain1", "data2", "read")
+	p41, err := g.HasPermission("domain1", "bunny", "data2", "read")
 	assert.NoError(t, err)
 	assert.Equal(t, false, p41)
 
 	//no domain
-	p51, err := g.HasPermission("alice", "domain4", "data2", "read")
+	p51, err := g.HasPermission("domain4", "alice", "data2", "read")
 	assert.NoError(t, err)
 	assert.Equal(t, false, p51)
 }
@@ -174,42 +183,42 @@ func TestGate_HasPermission(t *testing.T) {
 func TestGate_IsAdmin(t *testing.T) {
 	g, _ := NewGate("./rbac_model.conf", "./rbac_with_domains_policy.csv")
 	//domain1
-	isAdmin := g.IsAdmin("alice", "domain1")
+	isAdmin := g.IsAdmin("domain1", "alice")
 	assert.Equal(t, true, isAdmin)
-	isAdmin = g.IsAdmin("bob", "domain1")
+	isAdmin = g.IsAdmin("domain1", "bob")
 	assert.Equal(t, false, isAdmin)
 
 	//domain2
-	isAdmin = g.IsAdmin("alice", "domain2")
+	isAdmin = g.IsAdmin("domain2", "alice")
 	assert.Equal(t, false, isAdmin)
-	isAdmin = g.IsAdmin("bob", "domain2")
+	isAdmin = g.IsAdmin("domain2", "bob")
 	assert.Equal(t, true, isAdmin)
 
 	//domain3
-	isAdmin = g.IsAdmin("alice", "domain3")
+	isAdmin = g.IsAdmin("domain3", "alice")
 	assert.Equal(t, false, isAdmin)
-	isAdmin = g.IsAdmin("bob", "domain3")
+	isAdmin = g.IsAdmin("domain3", "bob")
 	assert.Equal(t, false, isAdmin)
-	isAdmin = g.IsAdmin("foo", "domain3")
+	isAdmin = g.IsAdmin("domain3", "foo")
 	assert.Equal(t, true, isAdmin)
 
 	//no user
-	isAdmin = g.IsAdmin("bee", "domain1")
+	isAdmin = g.IsAdmin("domain1", "bee")
 	assert.Equal(t, false, isAdmin)
 
 	//no domain
-	isAdmin = g.IsAdmin("alice", "domain4")
+	isAdmin = g.IsAdmin("domain4", "alice")
 	assert.Equal(t, false, isAdmin)
-	isAdmin = g.IsAdmin("bob", "domain4")
+	isAdmin = g.IsAdmin("domain4", "bob")
 	assert.Equal(t, false, isAdmin)
-	isAdmin = g.IsAdmin("foo", "domain4")
+	isAdmin = g.IsAdmin("domain4", "foo")
 	assert.Equal(t, false, isAdmin)
 }
 
 func TestGate_AddPolicy(t *testing.T) {
 	g, _ := NewGate("./rbac_model.conf", "./rbac_with_domains_policy.csv")
 
-	h, err := g.HasPermission("bella", "domain5", "resource1", "write")
+	h, err := g.HasPermission("domain5", "bella", "resource1", "write")
 	assert.NoError(t, err)
 	assert.Equal(t, false, h)
 
@@ -221,19 +230,19 @@ func TestGate_AddPolicy(t *testing.T) {
 	err = g.Save()
 	assert.NoError(t, err)
 
-	h, err = g.HasPermission("bella", "domain5", "resource1", "write")
+	h, err = g.HasPermission("domain5", "bella", "resource1", "write")
 	assert.NoError(t, err)
 	assert.Equal(t, true, h)
 
 	err = g.RevokeRoleToUser("domain5", "dep1", "bella")
 	assert.NoError(t, err)
-	h, err = g.HasPermission("bella", "domain5", "resource1", "write")
+	h, err = g.HasPermission("domain5", "bella", "resource1", "write")
 	assert.NoError(t, err)
 	assert.Equal(t, false, h)
 
 	err = g.RevokerPermissionToRole("domain5", "dep1", "resource1", "write")
 	assert.NoError(t, err)
-	h, err = g.HasPermission("bella", "domain5", "resource1", "write")
+	h, err = g.HasPermission("domain5", "bella", "resource1", "write")
 	assert.NoError(t, err)
 	assert.Equal(t, false, h)
 
