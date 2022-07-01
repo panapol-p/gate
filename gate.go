@@ -2,6 +2,7 @@ package gate
 
 import (
 	"github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v2/model"
 )
 
 type Gate struct {
@@ -13,8 +14,15 @@ type UserRole struct {
 	Role string
 }
 
-func NewGate(model, policyAdapter interface{}) (*Gate, error) {
-	e, err := casbin.NewEnforcer(model, policyAdapter)
+func NewGate(policyAdapter interface{}) (*Gate, error) {
+	m := model.NewModel()
+	m.AddDef("r", "r", "user, domain, module, action")
+	m.AddDef("p", "p", "role, domain, module , action")
+	m.AddDef("g", "g", " _, _, _")
+	m.AddDef("e", "e", "some(where (p.eft == allow))")
+	m.AddDef("m", "m", `g(r.user, p.role, r.domain) && r.domain == p.domain && r.module == p.module && (r.action == p.action || p.action == "*")`)
+
+	e, err := casbin.NewEnforcer(m, policyAdapter)
 	if err != nil {
 		return nil, err
 	}
@@ -102,6 +110,10 @@ func (g Gate) AssignRoleToUser(domain, role, user string) error {
 func (g Gate) RevokeRoleToUser(domain, role, user string) error {
 	_, err := g.E.RemoveGroupingPolicy(user, role, domain)
 	return err
+}
+
+func (g Gate) Load() error {
+	return g.E.LoadPolicy()
 }
 
 func (g Gate) Save() error {

@@ -4,21 +4,25 @@ import (
 	"log"
 	"testing"
 
+	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewGate(t *testing.T) {
-	g, err := NewGate("./rbac_model.conf", "./rbac_with_domains_policy.csv")
+	a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
+	g, err := NewGate(a)
 	assert.NoError(t, err)
 	assert.NotNil(t, g)
 
-	g, err = NewGate("./rbac_model.conf", "./no_file")
+	g, err = NewGate("./no_file")
 	assert.Error(t, err)
 	assert.Nil(t, g)
 }
 
 func TestGate_GetAllUsersRole(t *testing.T) {
-	g, _ := NewGate("./rbac_model.conf", "./rbac_with_domains_policy.csv")
+	a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
+	g, err := NewGate(a)
+	assert.NoError(t, err)
 
 	u1 := g.GetAllUsersRole("domain1")
 	expectedD1 := []UserRole{
@@ -49,7 +53,9 @@ func TestGate_GetAllUsersRole(t *testing.T) {
 }
 
 func TestGate_GetPermissionsForRole(t *testing.T) {
-	g, _ := NewGate("./rbac_model.conf", "./rbac_with_domains_policy.csv")
+	a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
+	g, err := NewGate(a)
+	assert.NoError(t, err)
 
 	ps := g.E.GetPermissionsForUserInDomain("writer", "domain1")
 	var p []string
@@ -104,7 +110,10 @@ func TestGate_GetPermissionsForRole(t *testing.T) {
 }
 
 func TestGate_GetRoles(t *testing.T) {
-	g, _ := NewGate("./rbac_model.conf", "./rbac_with_domains_policy.csv")
+	a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
+	g, err := NewGate(a)
+	assert.NoError(t, err)
+
 	r1 := g.GetRoles("domain1")
 	assert.Equal(t, []string{"admin", "writer", "reader", "visitor"}, r1)
 
@@ -116,7 +125,9 @@ func TestGate_GetRoles(t *testing.T) {
 }
 
 func TestGate_HasPermission(t *testing.T) {
-	g, _ := NewGate("./rbac_model.conf", "./rbac_with_domains_policy.csv")
+	a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
+	g, err := NewGate(a)
+	assert.NoError(t, err)
 
 	//domain1
 	p11, err := g.HasPermission("domain1", "alice", "data1", "write")
@@ -181,7 +192,10 @@ func TestGate_HasPermission(t *testing.T) {
 }
 
 func TestGate_IsAdmin(t *testing.T) {
-	g, _ := NewGate("./rbac_model.conf", "./rbac_with_domains_policy.csv")
+	a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
+	g, err := NewGate(a)
+	assert.NoError(t, err)
+
 	//domain1
 	isAdmin := g.IsAdmin("domain1", "alice")
 	assert.Equal(t, true, isAdmin)
@@ -216,7 +230,9 @@ func TestGate_IsAdmin(t *testing.T) {
 }
 
 func TestGate_AddPolicy(t *testing.T) {
-	g, _ := NewGate("./rbac_model.conf", "./rbac_with_domains_policy.csv")
+	a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
+	g, err := NewGate(a)
+	assert.NoError(t, err)
 
 	h, err := g.HasPermission("domain5", "bella", "resource1", "write")
 	assert.NoError(t, err)
@@ -247,5 +263,8 @@ func TestGate_AddPolicy(t *testing.T) {
 	assert.Equal(t, false, h)
 
 	err = g.Save()
+	assert.NoError(t, err)
+
+	err = g.Load()
 	assert.NoError(t, err)
 }
