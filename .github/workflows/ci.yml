@@ -20,13 +20,14 @@ jobs:
       - run: mkdir bin
       - run: go test -json ./... -covermode=atomic -coverprofile=bin/coverage.out -json > bin/report.json
 
-      - name: lint
-        if: github.event_name == 'pull_request'
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: latest
-          skip-build-cache: true
-          skip-pkg-cache: true
+      ## disable lint (gosimple,staticcheck,unused,staticcheck is disabled because of go1.18)
+      #- name: lint
+      #  if: github.event_name == 'pull_request'
+      #  uses: golangci/golangci-lint-action@v3
+      #  with:
+      #    version: latest
+      #    skip-build-cache: true
+      #    skip-pkg-cache: true
 
       - name: Archive code coverage results
         uses: actions/upload-artifact@v1
