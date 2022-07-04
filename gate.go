@@ -16,11 +16,11 @@ type UserRole struct {
 
 func NewGate(policyAdapter interface{}) (*Gate, error) {
 	m := model.NewModel()
-	m.AddDef("r", "r", "user, domain, module, action")
-	m.AddDef("p", "p", "role, domain, module , action")
+	m.AddDef("r", "r", "user, dom, module, action")
+	m.AddDef("p", "p", "role, dom, module , action")
 	m.AddDef("g", "g", " _, _, _")
 	m.AddDef("e", "e", "some(where (p.eft == allow))")
-	m.AddDef("m", "m", `g(r.user, p.role, r.domain) && r.domain == p.domain && r.module == p.module && (r.action == p.action || p.action == "*")`)
+	m.AddDef("m", "m", `g(r.user, p.role, r.dom) && r.dom == p.dom && r.module == p.module && (r.action == p.action || p.action == "*")`)
 
 	e, err := casbin.NewEnforcer(m, policyAdapter)
 	if err != nil {
