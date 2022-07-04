@@ -107,6 +107,23 @@ func (g Gate) AssignRoleToUser(domain, role, user string) error {
 	return err
 }
 
+func (g Gate) CountModule(domain string) map[string]int {
+	roles := g.GetRoles(domain)
+	counter := make(map[string]int)
+	moduleRole := make(map[string][]string)
+	for _, role := range roles {
+		modules := g.GetModuleRelatedByRole(domain, role)
+		moduleRole[role] = modules
+	}
+	users := g.GetAllUsersRole(domain)
+	for _, user := range users {
+		for _, module := range moduleRole[user.Role] {
+			counter[module]++
+		}
+	}
+	return counter
+}
+
 func (g Gate) RevokeRoleToUser(domain, role, user string) error {
 	_, err := g.E.RemoveGroupingPolicy(user, role, domain)
 	return err
@@ -118,4 +135,18 @@ func (g Gate) Load() error {
 
 func (g Gate) Save() error {
 	return g.E.SavePolicy()
+}
+
+func (g Gate) GetModuleRelatedByRole(domain, role string) []string {
+	var modules []string
+	mapModules := map[string]struct{}{}
+	policies := g.E.GetFilteredPolicy(0, role, domain, "", "")
+	for _, policy := range policies {
+		moduleName := policy[2]
+		if _, ok := mapModules[moduleName]; !ok {
+			mapModules[moduleName] = struct{}{}
+			modules = append(modules, moduleName)
+		}
+	}
+	return modules
 }

@@ -29,6 +29,7 @@ func TestGate_GetAllUsersRole(t *testing.T) {
 		{"alice", "admin"},
 		{"bob", "reader"},
 		{"foo", "visitor"},
+		{"chalet", "visitor"},
 	}
 	assert.Equal(t, expectedD1, u1)
 
@@ -37,6 +38,7 @@ func TestGate_GetAllUsersRole(t *testing.T) {
 		{"alice", "reader2"},
 		{"bob", "admin"},
 		{"foo", "visitor2"},
+		{"chalet", "visitor2"},
 	}
 	assert.Equal(t, expectedD2, u2)
 
@@ -44,6 +46,7 @@ func TestGate_GetAllUsersRole(t *testing.T) {
 	expectedD3 := []UserRole{
 		{"alice", "visitor3"},
 		{"bob", "reader3"},
+		{"chalet", "reader3"},
 		{"foo", "admin"},
 	}
 	assert.Equal(t, expectedD3, u3)
@@ -267,4 +270,67 @@ func TestGate_AddPolicy(t *testing.T) {
 
 	err = g.Load()
 	assert.NoError(t, err)
+}
+
+func TestGate_CountModule(t *testing.T) {
+	a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
+	g, err := NewGate(a)
+	assert.NoError(t, err)
+
+	c := g.CountModule("domain1")
+	assert.NoError(t, err)
+	expect := map[string]int{
+		"data2": 1,
+		"data3": 2,
+	}
+	assert.Equal(t, expect, c)
+
+	c = g.CountModule("domain2")
+	assert.NoError(t, err)
+	expect = map[string]int{
+		"data2": 1,
+	}
+	assert.Equal(t, expect, c)
+
+	c = g.CountModule("domain3")
+	assert.NoError(t, err)
+	expect = map[string]int{
+		"data2": 2,
+		"data3": 1,
+	}
+	assert.Equal(t, expect, c)
+
+	c = g.CountModule("domain5")
+	assert.NoError(t, err)
+	expect = map[string]int{}
+	assert.Equal(t, expect, c)
+}
+
+func TestGate_GetModuleRelatedByRole(t *testing.T) {
+	a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
+	g, err := NewGate(a)
+	assert.NoError(t, err)
+
+	m := g.GetModuleRelatedByRole("domain1", "reader")
+	assert.NoError(t, err)
+	expect := []string{"data2"}
+	assert.Equal(t, expect, m)
+
+	m = g.GetModuleRelatedByRole("domain1", "visitor")
+	assert.NoError(t, err)
+	expect = []string{"data3"}
+	assert.Equal(t, expect, m)
+
+	m = g.GetModuleRelatedByRole("domain1", "writer")
+	assert.NoError(t, err)
+	expect = []string{"data1"}
+	assert.Equal(t, expect, m)
+
+	m = g.GetModuleRelatedByRole("domain1", "writer2")
+	assert.NoError(t, err)
+	assert.Nil(t, m)
+
+	m = g.GetModuleRelatedByRole("domain5", "writer2")
+	assert.NoError(t, err)
+	assert.Nil(t, m)
 }

@@ -15,9 +15,12 @@ p, Observer3, domain3, data3, view
 g, alice, admin, domain1
 g, bob, reader, domain1
 g, foo, visitor, domain1
+g, chalet, visitor, domain1
 g, alice, reader2, domain2
 g, bob, admin, domain2
 g, foo, visitor2, domain2
+g, chalet, visitor2, domain2
 g, alice, visitor3, domain3
 g, bob, reader3, domain3
+g, chalet, reader3, domain3
 g, foo, admin, domain3
