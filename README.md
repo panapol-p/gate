@@ -14,7 +14,7 @@ role-based access control (RBAC) for multi domain/tenant implementation in Golan
 - casbin model use to set casbin policy pattern (gate fix this one for easy to use)
 - casbin policy use to store policy rule in casbin adapter (ex. domain has user and role and role in domain has permission) you can see example below
 <br>
-```casbincsv
+```
 //permission is contain module name and action name
 //policy type p -> role writer in domain1 has write permission in module data1
 p, writer, domain1, data1, write
