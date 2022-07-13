@@ -1,6 +1,6 @@
 # gate
 [![tests](https://github.com/panapol-p/gate/actions/workflows/ci.yml/badge.svg)](https://github.com/panapol-p/gate/actions/workflows/ci.yml)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=PP-Gate&metric=coverage)](https://sonarcloud.io/summary/new_code?id=PP-Gate) 
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=PP-Gate&metric=coverage)](https://sonarcloud.io/summary/new_code?id=PP-Gate)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=PP-Gate&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=PP-Gate)
 [![Go Reference](https://pkg.go.dev/badge/github.com/panapol-p/gate.svg)](https://pkg.go.dev/github.com/panapol-p/gate)
 
@@ -13,7 +13,8 @@ role-based access control (RBAC) for multi domain/tenant implementation in Golan
 #### word that you need to know
 - casbin model use to set casbin policy pattern (gate fix this one for easy to use)
 - casbin policy use to store policy rule in casbin adapter (ex. domain has user and role and role in domain has permission) you can see example below
-<br>
+  <br>
+
 ```
 //permission is contain module name and action name
 //policy type p -> role writer in domain1 has write permission in module data1
@@ -28,11 +29,10 @@ g, alice, admin, domain1
 //policy type g -> alice is visitor3 role in domain3
 g, alice, visitor3, domain3
 ```
-  
-<br><br>
+
 if you need  more information please follow the casbin document [casbin document](https://casbin.org/docs/en/supported-models)
 
-## Features
+## package Features
 - [x] support single domain and multi domain
 - [x] assign , revoke permission to role
 - [x] assign , revoke role to user
@@ -43,7 +43,11 @@ if you need  more information please follow the casbin document [casbin document
 - [x] list all user with role
 - [x] count module usage in domain (some application need to know module usage for limitation)
 - [ ] assign role to user with module usage license limitation in domain (coming soon)
+- [ ] assing multiple role into one user (not test yet)
+
+## security feature
 - [x] auto update when package dependency is update (we use [dependabot](https://github.com/dependabot/dependabot-core) to auto pull request for new package version)
+- [x] code quality scanning (we use [sonarcloud](https://sonarcloud.io/project/overview?id=PP-Gate) to detect code smell , bug , vulnerability , code coverage, etc.)
 
 ## Install <a id="install"></a>
 ```sh
@@ -66,7 +70,9 @@ func main(){
 }
 ```
 
-#### To assing permission to role and assign role to use `(ex. usecase -> manage user role and permission in user management)`
+#### To assing permission to role and assign role to user
+ex. usecase -> manage user role and permission in user management<br>
+notice : you can use userID (like "1234-1234-234-345") instead of user name (like "bella"), roleID too , we try to explain by using name for easy to understand and dont forget user and role must be unique in that domain if not it will be overwrite or add more policy
 ```go
 func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
@@ -78,7 +84,8 @@ func main(){
 }
 ```
 
-#### To revoke permission to role and revoke role to user `(ex. usecase -> manage user role and permission in user management)`
+#### To revoke permission to role and revoke role to user
+ex. usecase -> manage user role and permission in user management
 ```go
 func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
@@ -90,7 +97,8 @@ func main(){
 }
 ```
 
-#### To check user has permission in this domain or not `(ex. usecase -> middleware for http request)`
+#### To check user has permission in this domain or not
+ex. usecase -> middleware for http request
 ```go
 func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
@@ -102,7 +110,8 @@ func main(){
 }
 ```
 
-#### To check user is admin role in this domain or not `(ex. usecase -> middleware for admin http request)`
+#### To check user is admin role in this domain or not
+ex. usecase -> middleware for admin http request
 ```go
 func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
@@ -114,7 +123,8 @@ func main(){
 }
 ```
 
-#### To list all role in this domain `(ex. usecase -> show all role in user management page)`
+#### To list all role in this domain
+ex. usecase -> show all role in user management page
 ```go
 func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
@@ -127,7 +137,8 @@ func main(){
 }
 ```
 
-#### To list all user with role in this domain `(ex. usecase -> show all user with role in user management page)`
+#### To list all user with role in this domain
+ex. usecase -> show all user with role in user management page
 ```go
 func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
@@ -140,7 +151,8 @@ func main(){
 }
 ```
 
-#### To list all permission for role in this domain `(ex. usecase -> manage permission in role in user management page)`
+#### To list all permission for role in this domain
+ex. usecase -> manage permission in role in user management page
 ```go
 func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
@@ -156,7 +168,8 @@ func main(){
 ```
 
 
-#### To count module usage in this domain `(ex. usecase -> some application need to count the number of module usage)`
+#### To count module usage in this domain
+ex. usecase -> some application need to count the number of module usage
 ```go
 func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
@@ -169,8 +182,9 @@ func main(){
 }
 ```
 
-#### To assign role to user with  module usage limitation `(ex. usecase -> some application need to limit the number of module usage)`
-coming soon
+#### To assign role to user with  module usage limitation
+ex. usecase -> some application need to limit the number of module usage
+- coming soon
 
 ## License <a id="license"></a>
 Distributed under the MIT License. See [license](LICENSE) for more information.
