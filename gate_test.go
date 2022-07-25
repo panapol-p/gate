@@ -232,6 +232,49 @@ func TestGate_IsAdmin(t *testing.T) {
 	assert.Equal(t, false, isAdmin)
 }
 
+func TestGate_GetUsersRole(t *testing.T) {
+	a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
+	g, err := NewGate(a)
+	assert.NoError(t, err)
+
+	//domain1
+	r := g.GetUserRole("domain1", "alice")
+	assert.Equal(t, []string{"admin"}, r)
+	r = g.GetUserRole("domain1", "bob")
+	assert.Equal(t, []string{"reader"}, r)
+	r = g.GetUserRole("domain1", "foo")
+	assert.Equal(t, []string{"visitor"}, r)
+	r = g.GetUserRole("domain1", "chalet")
+	assert.Equal(t, []string{"visitor"}, r)
+
+	//domain2
+	r = g.GetUserRole("domain2", "alice")
+	assert.Equal(t, []string{"reader2"}, r)
+	r = g.GetUserRole("domain2", "bob")
+	assert.Equal(t, []string{"admin"}, r)
+	r = g.GetUserRole("domain2", "foo")
+	assert.Equal(t, []string{"visitor2"}, r)
+	r = g.GetUserRole("domain2", "chalet")
+	assert.Equal(t, []string{"visitor2"}, r)
+
+	//domain3
+	r = g.GetUserRole("domain3", "foo")
+	assert.Equal(t, []string{"admin"}, r)
+	r = g.GetUserRole("domain3", "alice")
+	assert.Equal(t, []string{"visitor3"}, r)
+	r = g.GetUserRole("domain3", "bob")
+	assert.Equal(t, []string{"reader3"}, r)
+	r = g.GetUserRole("domain3", "chalet")
+	assert.Equal(t, []string{"reader3"}, r)
+
+	//no user
+	r = g.GetUserRole("domain1", "bon")
+	assert.Nil(t, r)
+	//no domain
+	r = g.GetUserRole("domain4", "alice")
+	assert.Nil(t, r)
+}
+
 func TestGate_AddPolicy(t *testing.T) {
 	a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
 	g, err := NewGate(a)
