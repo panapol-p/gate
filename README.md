@@ -41,6 +41,8 @@ if you need  more information please follow the casbin document [casbin document
 - [x] list all role
 - [x] list all permission in role
 - [x] list all user with role
+- [x] list role by user
+- [ ] list permission by user
 - [x] count module usage in domain (some application need to know module usage for limitation)
 - [ ] assign role to user with module usage license limitation in domain (coming soon)
 - [ ] assing multiple role into one user (not test yet)
@@ -63,9 +65,9 @@ you can use another adapter to store casbin policy (mongo,postgresql,mysql,aws s
 <b>notice3</b> : if you build aplication that support scalable mode , please don't forget to set [casbin watcher](https://casbin.org/docs/en/watchers) to trigger event when some node has policy update, another node will know and use `g.Load()` for update policy each node otherwise all of your node will be not use same policy rules
 ```go
 func main(){
-	//set adapter
+    //set adapter
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
-	//create new gate
+    //create new gate
     g, err := NewGate(a)
 }
 ```
@@ -77,7 +79,7 @@ notice : you can use userID (like "1234-1234-234-345") instead of user name (lik
 func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
     g, err := NewGate(a)
-	// assign permission:write for module:resource1 to role:dep1 in domain:domain5
+    // assign permission:write for module:resource1 to role:dep1 in domain:domain5
     err = g.AssignPermissionToRole("domain5", "dep1", "resource1", "write")
     // assign role:dep1 to user:bella in domain:domain5
     err = g.AssignRoleToUser("domain5", "dep1", "bella")
@@ -90,7 +92,7 @@ ex. usecase -> manage user role and permission in user management
 func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
     g, err := NewGate(a)
-	// revoke permission:write for module:resource1 to role:dep1 in domain:domain5
+    // revoke permission:write for module:resource1 to role:dep1 in domain:domain5
     err = g.RevokerPermissionToRole("domain5", "dep1", "resource1", "write")
     // revoke role:dep1 to user:bella in domain:domain5
     err = g.RevokeRoleToUser("domain5", "dep1", "bella")
@@ -104,7 +106,7 @@ func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
     g, err := NewGate(a)
 
-	//user:bella has permission:write for module:resource1 in domain:domain5 or not?
+    //user:bella has permission:write for module:resource1 in domain:domain5 or not?
     h, err = g.HasPermission("domain5", "bella", "resource1", "write")
     //output : true / false
 }
@@ -117,9 +119,9 @@ func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
     g, err := NewGate(a)
 
-	//user:alice is role:admin in domain:domain1 or not?
+    //user:alice is role:admin in domain:domain1 or not?
     isAdmin := g.IsAdmin("domain1", "alice")
-	//output : true / false
+    //output : true / false
 }
 ```
 
@@ -130,9 +132,9 @@ func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
     g, err := NewGate(a)
 
-	//list all role in domain:domain1
+    //list all role in domain:domain1
     r1 := g.GetRoles("domain1")
-	//output : domain1 has role:admin , writer , reader , visitor
+    //output : domain1 has role:admin , writer , reader , visitor
     //output : []string{"admin", "writer", "reader", "visitor"}
 }
 ```
@@ -144,10 +146,10 @@ func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
     g, err := NewGate(a)
 
-	//list all user with role in domain:domain1
+    //list all user with role in domain:domain1
     u := g.GetAllUsersRole("domain1")
-	//output : domain1 has user:alice with role:admin and user:bob with role:reader
-	//output []UserRole{ {"alice", "admin"}, {"bob", "reader"}}
+    //output : domain1 has user:alice with role:admin and user:bob with role:reader
+    //output []UserRole{ {"alice", "admin"}, {"bob", "reader"}}
 }
 ```
 
@@ -158,12 +160,26 @@ func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
     g, err := NewGate(a)
 
-	//list all permission for role:writer in domain:domain1
-	//notice : if you use admin it will be return all permission in this domain
+    //list all permission for role:writer in domain:domain1
+    //notice : if you use admin it will be return all permission in this domain
     p := g.GetPermissionsForRole("domain1", "writer")
     //output : combine module and permission(action) with dot
-	//output : role:wrtiter in domain1 has read and write in module:data1
+    //output : role:wrtiter in domain1 has read and write in module:data1
     //output : []string{"data1.read", "data1.write"}
+}
+```
+
+
+#### To list role by user in this domain
+ex. usecase -> get role by user
+```go
+func main(){
+    a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
+    g, err := NewGate(a) 
+	
+    //list all role by user user:alice in domain:domain1
+    r := g.GetUserRole("domain2", "alice")
+    //output : []string{"admin"}
 }
 ```
 
@@ -175,10 +191,10 @@ func main(){
     a := fileadapter.NewAdapter("./testdata/rbac_with_domains_policy.csv")
     g, err := NewGate(a)
 
-	//list all module with number of usage in domain:domain1
+    //list all module with number of usage in domain:domain1
     m := g.CountModule("domain1")
-	//output : domain1 use module:data2 1 license and use module:data3 2 licenses
-	//output : map[string]int{ "data2": 1, "data3": 2}
+    //output : domain1 use module:data2 1 license and use module:data3 2 licenses
+    //output : map[string]int{ "data2": 1, "data3": 2}
 }
 ```
 

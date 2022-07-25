@@ -92,6 +92,15 @@ func (g Gate) GetAllUsersRole(domain string) []UserRole {
 	return urs
 }
 
+func (g Gate) GetUserRole(domain, user string) []string {
+	var roleUser []string
+	roles := g.E.GetFilteredGroupingPolicy(0, user, "", domain)
+	for _, role := range roles {
+		roleUser = append(roleUser, role[1])
+	}
+	return roleUser
+}
+
 func (g Gate) AssignPermissionToRole(domain, role, module, action string) error {
 	_, err := g.E.AddPolicy(role, domain, module, action)
 	return err
