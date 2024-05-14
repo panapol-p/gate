@@ -3,8 +3,9 @@ module github.com/panapol-p/gate
 go 1.18
 
 require (
-	github.com/casbin/casbin/v2 v2.81.0
-	github.com/stretchr/testify v1.9.0
+  dependabot/go_modules/github.com/stretchr/testify-1.9.0
+	github.com/casbin/casbin/v2 v2.88.0
+	github.com/stretchr/testify v1.8.4
 )
 
 require (
