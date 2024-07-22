@@ -1,7 +1,6 @@
 package gate
 
 import (
-	"log"
 	"testing"
 
 	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
@@ -24,34 +23,38 @@ func TestGate_GetAllUsersRole(t *testing.T) {
 	g, err := NewGate(a)
 	assert.NoError(t, err)
 
-	u1 := g.GetAllUsersRole("domain1")
+	u1, err := g.GetAllUsersRole("domain1")
 	expectedD1 := []UserRole{
 		{"alice", "admin"},
 		{"bob", "reader"},
 		{"foo", "visitor"},
 		{"chalet", "visitor"},
 	}
+	assert.NoError(t, err)
 	assert.Equal(t, expectedD1, u1)
 
-	u2 := g.GetAllUsersRole("domain2")
+	u2, err := g.GetAllUsersRole("domain2")
 	expectedD2 := []UserRole{
 		{"alice", "reader2"},
 		{"bob", "admin"},
 		{"foo", "visitor2"},
 		{"chalet", "visitor2"},
 	}
+	assert.NoError(t, err)
 	assert.Equal(t, expectedD2, u2)
 
-	u3 := g.GetAllUsersRole("domain3")
+	u3, err := g.GetAllUsersRole("domain3")
 	expectedD3 := []UserRole{
 		{"alice", "visitor3"},
 		{"bob", "reader3"},
 		{"chalet", "reader3"},
 		{"foo", "admin"},
 	}
+	assert.NoError(t, err)
 	assert.Equal(t, expectedD3, u3)
 
-	u4 := g.GetAllUsersRole("domain4")
+	u4, err := g.GetAllUsersRole("domain4")
+	assert.NoError(t, err)
 	assert.Nil(t, u4)
 }
 
@@ -65,7 +68,6 @@ func TestGate_GetPermissionsForRole(t *testing.T) {
 	for i := range ps {
 		p = append(p, ps[i][2]+"."+ps[i][3])
 	}
-	log.Println(p)
 
 	// test admin role
 	p11 := g.GetPermissionsForRole("domain1", "admin")
@@ -117,13 +119,16 @@ func TestGate_GetRoles(t *testing.T) {
 	g, err := NewGate(a)
 	assert.NoError(t, err)
 
-	r1 := g.GetRoles("domain1")
+	r1, err := g.GetRoles("domain1")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"admin", "writer", "reader", "visitor"}, r1)
 
-	r2 := g.GetRoles("domain2")
+	r2, err := g.GetRoles("domain2")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"admin", "writer2", "reader2"}, r2)
 
-	r3 := g.GetRoles("domain3")
+	r3, err := g.GetRoles("domain3")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"admin", "writer3", "reader3", "visitor3", "Observer3"}, r3)
 }
 
@@ -200,35 +205,46 @@ func TestGate_IsAdmin(t *testing.T) {
 	assert.NoError(t, err)
 
 	//domain1
-	isAdmin := g.IsAdmin("domain1", "alice")
+	isAdmin, err := g.IsAdmin("domain1", "alice")
+	assert.NoError(t, err)
 	assert.Equal(t, true, isAdmin)
-	isAdmin = g.IsAdmin("domain1", "bob")
+	isAdmin, err = g.IsAdmin("domain1", "bob")
+	assert.NoError(t, err)
 	assert.Equal(t, false, isAdmin)
 
 	//domain2
-	isAdmin = g.IsAdmin("domain2", "alice")
+	isAdmin, err = g.IsAdmin("domain2", "alice")
+	assert.NoError(t, err)
 	assert.Equal(t, false, isAdmin)
-	isAdmin = g.IsAdmin("domain2", "bob")
+	isAdmin, err = g.IsAdmin("domain2", "bob")
+	assert.NoError(t, err)
 	assert.Equal(t, true, isAdmin)
 
 	//domain3
-	isAdmin = g.IsAdmin("domain3", "alice")
+	isAdmin, err = g.IsAdmin("domain3", "alice")
+	assert.NoError(t, err)
 	assert.Equal(t, false, isAdmin)
-	isAdmin = g.IsAdmin("domain3", "bob")
+	isAdmin, err = g.IsAdmin("domain3", "bob")
+	assert.NoError(t, err)
 	assert.Equal(t, false, isAdmin)
-	isAdmin = g.IsAdmin("domain3", "foo")
+	isAdmin, err = g.IsAdmin("domain3", "foo")
+	assert.NoError(t, err)
 	assert.Equal(t, true, isAdmin)
 
 	//no user
-	isAdmin = g.IsAdmin("domain1", "bee")
+	isAdmin, err = g.IsAdmin("domain1", "bee")
+	assert.NoError(t, err)
 	assert.Equal(t, false, isAdmin)
 
 	//no domain
-	isAdmin = g.IsAdmin("domain4", "alice")
+	isAdmin, err = g.IsAdmin("domain4", "alice")
+	assert.NoError(t, err)
 	assert.Equal(t, false, isAdmin)
-	isAdmin = g.IsAdmin("domain4", "bob")
+	isAdmin, err = g.IsAdmin("domain4", "bob")
+	assert.NoError(t, err)
 	assert.Equal(t, false, isAdmin)
-	isAdmin = g.IsAdmin("domain4", "foo")
+	isAdmin, err = g.IsAdmin("domain4", "foo")
+	assert.NoError(t, err)
 	assert.Equal(t, false, isAdmin)
 }
 
@@ -238,40 +254,54 @@ func TestGate_GetUsersRole(t *testing.T) {
 	assert.NoError(t, err)
 
 	//domain1
-	r := g.GetUserRole("domain1", "alice")
+	r, err := g.GetUserRole("domain1", "alice")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"admin"}, r)
-	r = g.GetUserRole("domain1", "bob")
+	r, err = g.GetUserRole("domain1", "bob")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"reader"}, r)
-	r = g.GetUserRole("domain1", "foo")
+	r, err = g.GetUserRole("domain1", "foo")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"visitor"}, r)
-	r = g.GetUserRole("domain1", "chalet")
+	r, err = g.GetUserRole("domain1", "chalet")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"visitor"}, r)
 
 	//domain2
-	r = g.GetUserRole("domain2", "alice")
+	r, err = g.GetUserRole("domain2", "alice")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"reader2"}, r)
-	r = g.GetUserRole("domain2", "bob")
+	r, err = g.GetUserRole("domain2", "bob")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"admin"}, r)
-	r = g.GetUserRole("domain2", "foo")
+	r, err = g.GetUserRole("domain2", "foo")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"visitor2"}, r)
-	r = g.GetUserRole("domain2", "chalet")
+	r, err = g.GetUserRole("domain2", "chalet")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"visitor2"}, r)
 
 	//domain3
-	r = g.GetUserRole("domain3", "foo")
+	r, err = g.GetUserRole("domain3", "foo")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"admin"}, r)
-	r = g.GetUserRole("domain3", "alice")
+	r, err = g.GetUserRole("domain3", "alice")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"visitor3"}, r)
-	r = g.GetUserRole("domain3", "bob")
+	r, err = g.GetUserRole("domain3", "bob")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"reader3"}, r)
-	r = g.GetUserRole("domain3", "chalet")
+	r, err = g.GetUserRole("domain3", "chalet")
+	assert.NoError(t, err)
 	assert.Equal(t, []string{"reader3"}, r)
 
 	//no user
-	r = g.GetUserRole("domain1", "bon")
+	r, err = g.GetUserRole("domain1", "bon")
+	assert.NoError(t, err)
 	assert.Nil(t, r)
 	//no domain
-	r = g.GetUserRole("domain4", "alice")
+	r, err = g.GetUserRole("domain4", "alice")
+	assert.NoError(t, err)
 	assert.Nil(t, r)
 }
 
@@ -320,7 +350,7 @@ func TestGate_CountModule(t *testing.T) {
 	g, err := NewGate(a)
 	assert.NoError(t, err)
 
-	c := g.CountModule("domain1")
+	c, err := g.CountModule("domain1")
 	assert.NoError(t, err)
 	expect := map[string]int{
 		"data2": 1,
@@ -328,14 +358,14 @@ func TestGate_CountModule(t *testing.T) {
 	}
 	assert.Equal(t, expect, c)
 
-	c = g.CountModule("domain2")
+	c, err = g.CountModule("domain2")
 	assert.NoError(t, err)
 	expect = map[string]int{
 		"data2": 1,
 	}
 	assert.Equal(t, expect, c)
 
-	c = g.CountModule("domain3")
+	c, err = g.CountModule("domain3")
 	assert.NoError(t, err)
 	expect = map[string]int{
 		"data2": 2,
@@ -343,7 +373,7 @@ func TestGate_CountModule(t *testing.T) {
 	}
 	assert.Equal(t, expect, c)
 
-	c = g.CountModule("domain5")
+	c, err = g.CountModule("domain5")
 	assert.NoError(t, err)
 	expect = map[string]int{}
 	assert.Equal(t, expect, c)
@@ -354,26 +384,26 @@ func TestGate_GetModuleRelatedByRole(t *testing.T) {
 	g, err := NewGate(a)
 	assert.NoError(t, err)
 
-	m := g.GetModuleRelatedByRole("domain1", "reader")
+	m, err := g.GetModuleRelatedByRole("domain1", "reader")
 	assert.NoError(t, err)
 	expect := []string{"data2"}
 	assert.Equal(t, expect, m)
 
-	m = g.GetModuleRelatedByRole("domain1", "visitor")
+	m, err = g.GetModuleRelatedByRole("domain1", "visitor")
 	assert.NoError(t, err)
 	expect = []string{"data3"}
 	assert.Equal(t, expect, m)
 
-	m = g.GetModuleRelatedByRole("domain1", "writer")
+	m, err = g.GetModuleRelatedByRole("domain1", "writer")
 	assert.NoError(t, err)
 	expect = []string{"data1"}
 	assert.Equal(t, expect, m)
 
-	m = g.GetModuleRelatedByRole("domain1", "writer2")
+	m, err = g.GetModuleRelatedByRole("domain1", "writer2")
 	assert.NoError(t, err)
 	assert.Nil(t, m)
 
-	m = g.GetModuleRelatedByRole("domain5", "writer2")
+	m, err = g.GetModuleRelatedByRole("domain5", "writer2")
 	assert.NoError(t, err)
 	assert.Nil(t, m)
 }
