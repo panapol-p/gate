@@ -16,7 +16,7 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@v1
         with:
-          go-version: '1.18'
+          go-version: '1.22.4'
       - run: mkdir bin
       - run: go test -json ./... -covermode=atomic -coverprofile=bin/coverage.out -json > bin/report.json
 

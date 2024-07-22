@@ -32,7 +32,11 @@ func NewGate(policyAdapter interface{}) (*Gate, error) {
 
 func (g Gate) HasPermission(domain, user, module, action string) (bool, error) {
 	//gate for admin
-	if g.IsAdmin(domain, user) {
+	isAdmin, err := g.IsAdmin(domain, user)
+	if err != nil {
+		return false, err
+	}
+	if isAdmin {
 		return true, nil
 	}
 
@@ -41,16 +45,22 @@ func (g Gate) HasPermission(domain, user, module, action string) (bool, error) {
 	return res, err
 }
 
-func (g Gate) IsAdmin(domain, user string) bool {
-	f := g.E.GetFilteredGroupingPolicy(0, user, "admin", domain, "")
-	if len(f) > 0 {
-		return true
+func (g Gate) IsAdmin(domain, user string) (bool, error) {
+	f, err := g.E.GetFilteredGroupingPolicy(0, user, "admin", domain, "")
+	if err != nil {
+		return false, err
 	}
-	return false
+	if len(f) > 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
-func (g Gate) GetRoles(domain string) []string {
-	rs := g.E.GetFilteredPolicy(0, "", domain, "")
+func (g Gate) GetRoles(domain string) ([]string, error) {
+	rs, err := g.E.GetFilteredPolicy(0, "", domain, "")
+	if err != nil {
+		return make([]string, 0), err
+	}
 	var r []string
 	mapRoles := map[string]struct{}{}
 
@@ -63,7 +73,7 @@ func (g Gate) GetRoles(domain string) []string {
 			r = append(r, roleNames)
 		}
 	}
-	return r
+	return r, nil
 }
 
 func (g Gate) GetPermissionsForRole(domain string, role string) []string {
@@ -79,9 +89,12 @@ func (g Gate) GetPermissionsForRole(domain string, role string) []string {
 	return p
 }
 
-func (g Gate) GetAllUsersRole(domain string) []UserRole {
+func (g Gate) GetAllUsersRole(domain string) ([]UserRole, error) {
 	var urs []UserRole
-	users := g.E.GetFilteredGroupingPolicy(0, "", "", domain)
+	users, err := g.E.GetFilteredGroupingPolicy(0, "", "", domain)
+	if err != nil {
+		return nil, err
+	}
 	for _, user := range users {
 		ur := UserRole{
 			User: user[0],
@@ -89,16 +102,19 @@ func (g Gate) GetAllUsersRole(domain string) []UserRole {
 		}
 		urs = append(urs, ur)
 	}
-	return urs
+	return urs, nil
 }
 
-func (g Gate) GetUserRole(domain, user string) []string {
+func (g Gate) GetUserRole(domain, user string) ([]string, error) {
 	var roleUser []string
-	roles := g.E.GetFilteredGroupingPolicy(0, user, "", domain)
+	roles, err := g.E.GetFilteredGroupingPolicy(0, user, "", domain)
+	if err != nil {
+		return []string{}, err
+	}
 	for _, role := range roles {
 		roleUser = append(roleUser, role[1])
 	}
-	return roleUser
+	return roleUser, nil
 }
 
 func (g Gate) AssignPermissionToRole(domain, role, module, action string) error {
@@ -116,21 +132,30 @@ func (g Gate) AssignRoleToUser(domain, role, user string) error {
 	return err
 }
 
-func (g Gate) CountModule(domain string) map[string]int {
-	roles := g.GetRoles(domain)
+func (g Gate) CountModule(domain string) (map[string]int, error) {
+	roles, err := g.GetRoles(domain)
+	if err != nil {
+		return nil, err
+	}
 	counter := make(map[string]int)
 	moduleRole := make(map[string][]string)
 	for _, role := range roles {
-		modules := g.GetModuleRelatedByRole(domain, role)
+		modules, err := g.GetModuleRelatedByRole(domain, role)
+		if err != nil {
+			return nil, err
+		}
 		moduleRole[role] = modules
 	}
-	users := g.GetAllUsersRole(domain)
+	users, err := g.GetAllUsersRole(domain)
+	if err != nil {
+		return nil, err
+	}
 	for _, user := range users {
 		for _, module := range moduleRole[user.Role] {
 			counter[module]++
 		}
 	}
-	return counter
+	return counter, nil
 }
 
 func (g Gate) RevokeRoleToUser(domain, role, user string) error {
@@ -146,10 +171,13 @@ func (g Gate) Save() error {
 	return g.E.SavePolicy()
 }
 
-func (g Gate) GetModuleRelatedByRole(domain, role string) []string {
+func (g Gate) GetModuleRelatedByRole(domain, role string) ([]string, error) {
 	var modules []string
 	mapModules := map[string]struct{}{}
-	policies := g.E.GetFilteredPolicy(0, role, domain, "", "")
+	policies, err := g.E.GetFilteredPolicy(0, role, domain, "", "")
+	if err != nil {
+		return []string{}, err
+	}
 	for _, policy := range policies {
 		moduleName := policy[2]
 		if _, ok := mapModules[moduleName]; !ok {
@@ -157,5 +185,5 @@ func (g Gate) GetModuleRelatedByRole(domain, role string) []string {
 			modules = append(modules, moduleName)
 		}
 	}
-	return modules
+	return modules, nil
 }
