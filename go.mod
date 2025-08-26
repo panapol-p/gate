@@ -4,7 +4,7 @@ go 1.22.4
 
 require (
 	github.com/casbin/casbin/v2 v2.108.0
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 )
 
 require (
